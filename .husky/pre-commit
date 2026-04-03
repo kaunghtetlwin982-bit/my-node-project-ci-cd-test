@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Checking code quality before commit... 🔍"
+
+# ၁။ TypeScript Error ရှိမရှိ စစ်မယ် (Build ဆွဲကြည့်တာပါ)
+npm run build || exit 1
+
+# ၂။ Unit Tests တွေ Run မယ်
+npm test || exit 1
+
+echo "All checks passed! Committing code... ✅"
