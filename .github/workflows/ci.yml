@@ -29,9 +29,5 @@ jobs:
       - name: Build TypeScript
         run: npm run build
 
-      # Server ကို နောက်ကွယ်မှာ ခဏဖွင့်ထားမှ Test က လှမ်းခေါ်လို့ရမှာပါ
-      - name: Run Server in Background
-        run: npm run dev & sleep 10
-
       - name: Run Tests
         run: npm test
