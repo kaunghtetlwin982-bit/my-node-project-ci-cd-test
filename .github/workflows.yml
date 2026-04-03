@@ -1,0 +1,37 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prisma Generate
+        run: npx prisma generate
+
+      - name: Build TypeScript
+        run: npm run build
+
+      # Server ကို နောက်ကွယ်မှာ ခဏဖွင့်ထားမှ Test က လှမ်းခေါ်လို့ရမှာပါ
+      - name: Run Server in Background
+        run: npm run dev & sleep 10
+
+      - name: Run Tests
+        run: npm test
