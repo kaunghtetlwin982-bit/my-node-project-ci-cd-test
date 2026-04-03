@@ -5,6 +5,7 @@ import { connectDb } from './ helper/dbHelper.js';
 const app = express();
 const port = 3005;
 
+// connectDb()
 
 
 app.get('/', (req: Request, res: Response) => {
@@ -13,5 +14,9 @@ app.get('/', (req: Request, res: Response) => {
 
 app.listen(port, () => {
     console.log(`🚀 Server is running at http://localhost:${port}`);
-    connectDb()
+    // connectDb()
 });
+
+
+
+export default app;
