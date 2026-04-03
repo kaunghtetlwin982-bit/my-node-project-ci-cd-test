@@ -12,7 +12,7 @@ import { test, describe, after } from 'node:test';
 import assert from 'node:assert';
 import request from 'supertest';
 import app from './app.js';
-import { prisma } from './ helper/dbHelper.js';
+// import { prisma } from './ helper/dbHelper.js';
 describe('Basic API Tests', () => {
     test('should return 200 OK', async () => {
         const response = await request(app).get('/');
@@ -21,7 +21,7 @@ describe('Basic API Tests', () => {
 });
 after(async () => {
     console.log("Cleaning up and exiting...");
-    await prisma.$disconnect();
+    // await prisma.$disconnect();
     // GitHub Actions မှာ Server Hanging ဖြစ်တာကို တားဖို့အတွက် 
     // Test အကုန်ပြီးတာနဲ့ Process ကို အတင်းပိတ်ခိုင်းလိုက်တာပါ
     setTimeout(() => {
