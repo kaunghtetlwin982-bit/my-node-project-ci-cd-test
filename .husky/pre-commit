@@ -1,10 +1,15 @@
-
 echo "Checking code quality before commit... 🔍"
 
-# ၁။ TypeScript Error ရှိမရှိ စစ်မယ် (Build ဆွဲကြည့်တာပါ)
+# ၁။ Formatting စစ်မယ်
+npm run format:check || exit 1
+
+# ၂။ Linting စစ်မယ်
+npm run lint || exit 1
+
+# ၃။ TypeScript Build စစ်မယ်
 npm run build || exit 1
 
-# ၂။ Unit Tests တွေ Run မယ်
+# ၄။ Unit Tests တွေ Run မယ်
 npm test || exit 1
 
 echo "All checks passed! Committing code... ✅"
