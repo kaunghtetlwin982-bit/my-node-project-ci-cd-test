@@ -1,4 +1,16 @@
-steps:
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -17,6 +29,9 @@ steps:
       - name: Build TypeScript
         run: npm run build
 
-      # Server ဖွင့်စရာမလိုတော့ဘဲ တန်းပြီး Test လို့ရပါပြီ
+      # Server ကို နောက်ကွယ်မှာ ခဏဖွင့်ထားမှ Test က လှမ်းခေါ်လို့ရမှာပါ
+      - name: Run Server in Background
+        run: npm run dev & sleep 10
+
       - name: Run Tests
         run: npm test
