@@ -7,7 +7,7 @@ const port = 3005;
 
 
 app.get('/', (req: Request, res: Response) => {
-    res.json({ message: "Hello TypeScript Node.js CI/CD!" });
+    res.json({ message: "Hello TypeScript Node.js CI/CD! to test" });
 });
 
 app.listen(port, () => {
