@@ -1,76 +1,68 @@
-  name: Node.js CI
+name: Node.js CI
 
-  on:
-    push:
-      branches: [ main ]
-    pull_request:
-      branches: [ main ]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-  jobs:
-    build-and-test:
-      runs-on: ubuntu-latest
+jobs:
+  # ပထမ Job: စစ်ဆေးတဲ့အပိုင်း
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: sms_new
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      services:
-        mysql:
-          image: mysql:8.0
-          env:
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: sms_new
-          ports:
-            - 3306:3306
-          options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: '22'
-            cache: 'npm'
+      - name: Install dependencies
+        run: npm install
 
-        - name: Install dependencies
-          run: npm install
-
-        - name: Prisma Generate
-          run: npx prisma generate
-
-        - name: Check Formatting
-          run: npm run format:check
-
-        - name: Run Lint
-          run: npm run lint
-
-        - name: Build TypeScript
-          run: npm run build
+      - name: Prisma Generate
+        run: npx prisma generate
         
-        
-        - name: Wait for MySQL to be ready
-          run: sleep 20
+      - name: Check Formatting
+        run: npm run format:check
 
-        - name: Prisma Generate & Migrate
-          env:
-            # Secret ကို မသုံးဘဲ Direct Localhost URL ကို ရေးပေးလိုက်ပါ
-            DATABASE_URL: "mysql://root:root@127.0.0.1:3306/sms_new"
-          run: |
-            npx prisma generate
-            npx prisma db push
+      - name: Run Lint
+        run: npm run lint
 
+      - name: Build TypeScript
+        run: npm run build
 
-        - name: Run Tests
-          env:
-            # ဒီနေရာမှာလည်း Localhost IP တွေကိုပဲ သုံးရပါမယ်
-            DATABASE_URL: "mysql://root:root@127.0.0.1:3306/sms_new"
-            DATABASE_HOST: "127.0.0.1"
-            DATABASE_USER: "root"
-            DATABASE_PASSWORD: "root"
-            DATABASE_NAME: "sms_new"
-            DATABASE_PORT: "3306"
-          run: NODE_OPTIONS=--experimental-vm-modules npm test
-# ဒုတိယ Job: Test အောင်ရင် Server ပေါ်တင်မယ့်အပိုင်း (CD)
+      - name: Wait for MySQL to be ready
+        run: sleep 20
+
+      - name: Prisma Db Push
+        env:
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/sms_new"
+        run: npx prisma db push
+
+      - name: Run Tests
+        env:
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/sms_new"
+          NODE_ENV: test
+        run: NODE_OPTIONS=--experimental-vm-modules npm test
+
+  # ဒုတိယ Job: Deploy လုပ်တဲ့အပိုင်း (Indentation သတိထားပါ)
   deploy:
-    needs: build-and-test # build-and-test အောင်မှ လုပ်မယ်
+    needs: build-and-test 
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
@@ -82,20 +74,13 @@
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # ၁။ Project folder ထဲကို အရင်ဝင်မယ်
             cd ${{ secrets.SERVER_DEST }}
-            
-            # ၂။ GitHub ကနေ နောက်ဆုံး code တွေကို ဆွဲယူမယ်
             git pull origin main
-            
-            # ၃။ လိုအပ်တာတွေ သွင်းပြီး Build ဆွဲမယ်
             npm install --legacy-peer-deps
             npx prisma generate
             npm run build
-            
-            # ၄။ PM2 နဲ့ App ကို Restart ချမယ်
             pm2 restart my-node-ci || pm2 start dist/app.js --name "my-node-ci"
-      # အောင်မြင်ရင် Notification ပို့မယ်
+
       - name: Send Success Notification
         if: success()
         uses: appleboy/telegram-action@master
@@ -104,14 +89,10 @@
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             ✅ Deployment Success!
-            ------------------------
             Project: ${{ github.repository }}
-            Commit: ${{ github.event.head_commit.message }}
             Author: ${{ github.actor }}
-            
-            Server is now updated! 🚀
+            🚀 Server is now updated!
 
-      # ကျရှုံးရင် (Error တက်ရင်) Notification ပို့မယ်
       - name: Send Failure Notification
         if: failure()
         uses: appleboy/telegram-action@master
@@ -120,6 +101,5 @@
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             ❌ Deployment Failed!
-            ------------------------
             Project: ${{ github.repository }}
             Check logs here: https://github.com/${{ github.repository }}/actions
