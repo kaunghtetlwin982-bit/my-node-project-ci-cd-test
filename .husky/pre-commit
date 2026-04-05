@@ -1,15 +1,17 @@
+#!/usr/bin/env sh
+
 echo "Checking code quality before commit... 🔍"
 
-# ၁။ Formatting စစ်မယ်
+# ၁။ Formatting စစ်မယ် (Prettier)
 npm run format:check || exit 1
 
-# ၂။ Linting စစ်မယ်
+# ၂။ Linting စစ်မယ် (ESLint)
 npm run lint || exit 1
 
-# ၃။ TypeScript Build စစ်မယ်
+# ၃။ TypeScript Build စစ်မယ် (TSC)
 npm run build || exit 1
 
-# ၄။ Unit Tests တွေ Run မယ်
+# ၄။ Unit Tests တွေ Run မယ် (Node Test)
 npm test || exit 1
 
-echo "All checks passed! Committing code.... ✅"
+echo "All checks passed! Committing code... ✅"
